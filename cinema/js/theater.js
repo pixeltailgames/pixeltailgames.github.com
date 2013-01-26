@@ -1,16 +1,3 @@
-/*
-	Video Player Types (LEGACY SUPPORT)
-	Fully supported player APIs reserve their own enum
-*/
-var VIDEO_INVALID = 0,
-	VIDEO_URL = 1,
-	VIDEO_YOUTUBE = 2,
-	VIDEO_VIMEO = 3,
-	VIDEO_TWITCH = 4,
-	VIDEO_HULU = 5,
-	VIDEO_BLIP = 6,
-	VIDEO_TWITCH_STREAM = 7;
-
 var theater = {
 
 	closedCaptions: false,
@@ -62,7 +49,7 @@ var theater = {
 		if(swfobject && !swfobject.hasFlashPlayerVersion("1")) return;
 		if ( ( type == null ) || ( data == null ) ) return;
 		
-		if ( type == VIDEO_INVALID ) {
+		if ( type == "" ) {
 			this.disablePlayer();
 			return;
 		}
@@ -343,12 +330,11 @@ var YouTubeVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_YOUTUBE, YouTubeVideo );
 registerPlayer( "youtube", YouTubeVideo );
 
 function onYouTubePlayerReady( playerId ) {
 	var player = theater.getPlayer();
-	if ( player && ((player.getType() == VIDEO_YOUTUBE) || (player.getType() == "youtube")) ) {
+	if ( player && (player.getType() == "youtube") ) {
 		player.onReady();
 	}
 }
@@ -444,7 +430,6 @@ var VimeoVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_VIMEO, VimeoVideo );
 registerPlayer( "vimeo", VimeoVideo );
 
 var TwitchVideo = function() {
@@ -592,7 +577,6 @@ var TwitchVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_TWITCH, TwitchVideo );
 registerPlayer( "twitch", TwitchVideo );
 
 var TwitchStreamVideo = function() {
@@ -696,7 +680,6 @@ var TwitchStreamVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_TWITCH_STREAM, TwitchStreamVideo );
 registerPlayer( "twitchstream", TwitchStreamVideo );
 
 var BlipVideo = function() {
@@ -854,7 +837,6 @@ var BlipVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_BLIP, BlipVideo );
 registerPlayer( "blip", BlipVideo );
 
 var UrlVideo = function() {
@@ -943,5 +925,4 @@ var UrlVideo = function() {
 	}
 
 };
-registerPlayer( VIDEO_URL, UrlVideo );
 registerPlayer( "url", UrlVideo );
