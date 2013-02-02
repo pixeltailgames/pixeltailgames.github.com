@@ -693,8 +693,10 @@ var JustinStreamVideo = function() {
 	this.embed = function() {
 
 		var flashvars = {
-			hostname: "www.justin.tv",
+			publisherGuard: "null",
+			hide_chat: true,
 			channel: this.videoId,
+			// hostname: "www.justin.tv",
 			auto_play: true,
 			start_volume: (this.volume || 25) // this isn't working :(
 		}
@@ -744,7 +746,7 @@ var JustinStreamVideo = function() {
 				}
 
 				i++;
-				if (i > 100) {
+				if (i > 500) {
 					console.log("Error waiting for player to load");
 					clearInterval(interval);
 				}
