@@ -213,6 +213,7 @@ function registerPlayer( type, object ) {
 	theater.loadVideo( "twitch", "mega64podcast,a349531893", 30*60 )
 	theater.loadVideo( "twitch", "cosmowright,c1789194" )
 	theater.loadVideo( "twitchstream", "ignproleague" )
+	theater.loadVideo( "justinstream", "highspothorror168" )
 	theater.loadVideo( "blip", "6484826", 60 )
 
 */
@@ -681,6 +682,109 @@ var TwitchStreamVideo = function() {
 
 };
 registerPlayer( "twitchstream", TwitchStreamVideo );
+
+var JustinStreamVideo = function() {
+
+	var self = this;
+
+	/*
+		Embed Player Object
+	*/
+	this.embed = function() {
+
+		var flashvars = {
+			hostname: "www.justin.tv",
+			channel: this.videoId,
+			auto_play: true,
+			start_volume: (this.volume || 25) // this isn't working :(
+		}
+
+		var swfurl = "http://www-cdn.justin.tv/widgets/live_site_player.swf";
+
+		var params = {
+			"allowFullScreen": "true",
+			"allowNetworking": "all",
+			"allowScriptAccess": "always",
+			"movie": swfurl,
+			"wmode": "opaque",
+			"bgcolor": "#000000"
+		};
+
+		swfobject.embedSWF(
+			swfurl,
+			"player",
+			"100%",
+			"104%",
+			"9.0.0",
+			false,
+			flashvars,
+			params
+		);
+
+	}
+
+	/*
+		Standard Player Methods
+	*/
+	this.setVideo = function( id ) {
+		this.lastVideoId = null;
+		this.videoId = id;
+
+		// Wait for player to be ready
+		if ( this.player == null ) {
+			this.lastVideoId = this.videoId;
+			this.embed();
+
+			var i = 0;
+			var interval = setInterval( function() {
+				var el = document.getElementById("player");
+				if(el.mute){
+					clearInterval(interval);
+					self.onReady();
+				}
+
+				i++;
+				if (i > 100) {
+					console.log("Error waiting for player to load");
+					clearInterval(interval);
+				}
+			}, 33);		
+		}
+	}
+
+	this.setVolume = function( volume ) {}
+
+	this.setStartTime = function( seconds ) { }
+
+	this.seek = function( seconds ) { }
+
+	this.onRemove = function() {
+		clearInterval( this.interval );
+	}
+
+	/*
+		Player Specific Methods
+	*/
+	this.think = function() {
+
+		if ( this.player ) {
+			
+			if ( this.videoId != this.lastVideoId ) {
+				this.embed();
+				this.lastVideoId = this.videoId;
+			}
+
+		}
+
+	}
+
+	this.onReady = function() {
+		this.player = document.getElementById('player');
+		this.interval = setInterval( function() { self.think(self); }, 100 );
+	}
+
+};
+registerPlayer( "justinstream", JustinStreamVideo );
 
 var BlipVideo = function() {
 
