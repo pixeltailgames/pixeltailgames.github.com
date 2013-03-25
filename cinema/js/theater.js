@@ -1032,3 +1032,95 @@ var UrlVideo = function() {
 
 };
 registerPlayer( "url", UrlVideo );
+
+// Thanks to WinterPhoenix96 for helping with Livestream support
+var LivestreamVideo = function() {
+
+	var flashvars = {};
+
+	var swfurl = "http://cdn.livestream.com/chromelessPlayer/wrappers/JSPlayer.swf";
+	// var swfurl = "http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf";
+
+	var params = {
+		// "allowFullScreen": "true",
+		"allowNetworking": "all",
+		"allowScriptAccess": "always",
+		"movie": swfurl,
+		"wmode": "opaque",
+		"bgcolor": "#000000"
+	};
+
+	swfobject.embedSWF(
+		swfurl,
+		"player",
+		"100%",
+		"100%",
+		"9.0.0",
+		"expressInstall.swf",
+		flashvars,
+		params
+	);
+
+	/*
+		Standard Player Methods
+	*/
+	this.setVideo = function( id ) {
+		this.lastVideoId = null;
+		this.videoId = id;
+	}
+
+	this.setVolume = function( volume ) {
+		this.lastVolume = null;
+		this.volume = volume / 100;
+	}
+
+	this.setStartTime = function() { }
+
+	this.seek = function( seconds ) { }
+
+	this.onRemove = function() {
+		clearInterval( this.interval );
+	}
+
+	/*
+		Player Specific Methods
+	*/
+	this.think = function() {
+
+		if ( this.player != null ) {
+
+			if ( this.videoId != this.lastVideoId ) {
+				this.player.load( this.videoId );
+				this.player.startPlayback();
+				this.lastVideoId = this.videoId;
+			}
+			
+			if ( this.volume != this.lastVolume ) {
+				this.player.setVolume( this.volume );
+				this.lastVolume = this.volume;
+			}
+			
+		}
+
+	}
+	
+	this.onReady = function() {
+		this.player = document.getElementById('player');
+
+		var self = this;
+		this.interval = setInterval( function() { self.think(self); }, 100 );
+		this.player.setVolume( this.volume );
+	}
+	
+};
+registerPlayer( "livestream", LivestreamVideo );
+
+function livestreamPlayerCallback( event, data ) {
+	if (event == "ready") {
+		var player = theater.getPlayer();
+		if ( player && (player.getType() == "livestream") ) {
+			// player.setDevKey('l2LpsvkxY1N89bH2BTemGsUo_MeyoPUcupY_es0SuZw5xk8mvzyhqpbq2x6YN2fYt7Iiw6ydvALlFZfuccIwvdC6DrpWu_yLqn3Unazg5tA');
+			player.onReady();
+		}
+	}
+}
