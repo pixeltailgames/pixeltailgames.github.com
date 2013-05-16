@@ -215,6 +215,7 @@ function registerPlayer( type, object ) {
 	theater.loadVideo( "twitchstream", "ignproleague" )
 	theater.loadVideo( "justinstream", "highspothorror168" )
 	theater.loadVideo( "blip", "6484826", 60 )
+	theater.loadVideo( "html", "<span style='color:red;'>Hello world!</span>", 10 )
 
 */
 
@@ -1124,3 +1125,46 @@ function livestreamPlayerCallback( event, data ) {
 		}
 	}
 }
+
+
+var HtmlVideo = function() {
+
+	/*
+		Embed Player Object
+	*/
+	this.embed = function() {
+
+		var elem = document.getElementById("player1");
+		if (elem) {
+			elem.parentNode.removeChild(elem);
+		}
+
+		var content = document.createElement('div');
+		content.setAttribute('id', 'player1');
+		content.style.width = "100%";
+		content.style.height = "100%";
+		content.innerHTML = this.videoId;
+
+		document.getElementById('player').appendChild(content);
+
+	}
+
+	/*
+		Standard Player Methods
+	*/
+	this.setVideo = function( id ) {
+		this.lastVideoId = null;
+		this.videoId = id;
+		this.embed();
+	}
+
+	this.setVolume = function( volume ) { }
+
+	this.setStartTime = function( seconds ) { }
+
+	this.seek = function( seconds ) { }
+
+	this.onRemove = function() { }
+
+};
+registerPlayer( "html", HtmlVideo );
