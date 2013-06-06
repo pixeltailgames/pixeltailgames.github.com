@@ -375,7 +375,10 @@ function registerPlayer( type, object ) {
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
-			this.startTime = seconds;
+
+			// Set minimum of 1 seconds due to Awesomium issues causing
+			// the Vimeo player not to load.
+			this.startTime = Math.max( 1, seconds );
 		}
 
 		this.seek = function( seconds ) {
