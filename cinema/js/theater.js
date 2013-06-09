@@ -209,6 +209,7 @@ function registerPlayer( type, object ) {
 	Test Cases
 
 	theater.loadVideo( "youtube", "JVxe5NIABsI", 30 )
+	theater.loadVideo( "youtubelive", "0Sdkwsw2Ji0" )
 	theater.loadVideo( "vimeo", "55874553", 30 )
 	theater.loadVideo( "twitch", "mega64podcast,a349531893", 30*60 )
 	theater.loadVideo( "twitch", "cosmowright,c1789194" )
@@ -334,6 +335,7 @@ function registerPlayer( type, object ) {
 
 	};
 	registerPlayer( "youtube", YouTubeVideo );
+	registerPlayer( "youtubelive", YouTubeVideo );
 
 	var VimeoVideo = function() {
 
@@ -375,10 +377,7 @@ function registerPlayer( type, object ) {
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
-
-			// Set minimum of 1 seconds due to Awesomium issues causing
-			// the Vimeo player not to load.
-			this.startTime = Math.max( 1, seconds );
+			this.startTime = seconds;
 		}
 
 		this.seek = function( seconds ) {
@@ -404,10 +403,10 @@ function registerPlayer( type, object ) {
 					this.lastVolume = this.volume;
 				}
 
-				if ( this.startTime != this.lastStartTime ) {
+				/*if ( this.startTime != this.lastStartTime ) {
 					this.seek( this.startTime );
 					this.lastStartTime = this.startTime;
-				}
+				}*/
 
 				this.froogaloop.api('getVolume', function(v) {
 					self.volume = parseFloat(v);
@@ -1163,7 +1162,7 @@ function registerPlayer( type, object ) {
 
 function onYouTubePlayerReady( playerId ) {
 	var player = theater.getPlayer();
-	if ( player && (player.getType() == "youtube") ) {
+	if ( player && (player.getType() == "youtube" || player.getType() == "youtubelive") ) {
 		player.onReady();
 	}
 }
