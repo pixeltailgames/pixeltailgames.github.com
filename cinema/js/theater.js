@@ -377,7 +377,10 @@ function registerPlayer( type, object ) {
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
-			this.startTime = seconds;
+
+			// Set minimum of 1 seconds due to Awesomium issues causing
+			// the Vimeo player not to load.
+			this.startTime = Math.max( 1, seconds )
 		}
 
 		this.seek = function( seconds ) {
@@ -403,10 +406,10 @@ function registerPlayer( type, object ) {
 					this.lastVolume = this.volume;
 				}
 
-				/*if ( this.startTime != this.lastStartTime ) {
+				if ( this.startTime != this.lastStartTime ) {
 					this.seek( this.startTime );
 					this.lastStartTime = this.startTime;
-				}*/
+				}
 
 				this.froogaloop.api('getVolume', function(v) {
 					self.volume = parseFloat(v);
