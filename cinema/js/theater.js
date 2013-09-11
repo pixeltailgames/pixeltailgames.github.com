@@ -380,11 +380,11 @@ function registerPlayer( type, object ) {
 
 			// Set minimum of 1 seconds due to Awesomium issues causing
 			// the Vimeo player not to load.
-			this.startTime = Math.max( 1, seconds )
+			this.startTime = Math.max( 1, seconds );
 		}
 
 		this.seek = function( seconds ) {
-			if ( this.froogaloop != null ) {
+			if ( this.froogaloop != null && seconds > 1 ) {
 				this.froogaloop.api('seekTo', seconds);
 			}
 		}
