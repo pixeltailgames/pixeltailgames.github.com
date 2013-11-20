@@ -141,22 +141,22 @@ var theater = {
 		if ( this.player !== null ) {
 			this.player.toggleControls( enabled );
 		}
-	}
+	},
 
 	/*
 		Google Chromeless player doesn't support closed captions...
 		http://code.google.com/p/gdata-issues/issues/detail?id=444
 	*/
-	/*
+	
 	enableCC: function() {
 		this.closedCaptions = true;
 	},
 
 	isCCEnabled: function() {
 		return this.closedCaptions;
-	},
+	}
 
-	clickPlayerCenter: function() {
+	/*clickPlayerCenter: function() {
 		var evt = document.createEvent("MouseEvents");
 
 		var player = document.getElementById("player");
