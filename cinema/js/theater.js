@@ -1,13 +1,31 @@
+if (window.swfobject === undefined) window.swfobject = null;
+window.open = function() { return null; }; // prevent popups
+
 var theater = {
 
-	closedCaptions: false,
+	playerContainer: null,
+	playerContent: null,
+	// closedCaptions: false,
+	// language: "en",
 	hdPlayback: false,
-	language: "en",
 	player: null,
 	volume: 25,
+	syncMaxDiff: 5,
 
 	getPlayerContainer: function() {
-		return document.getElementById('player-container');
+		if ( this.playerContainer === null ) {
+			this.playerContainer = document.getElementById('player-container') ||
+				document.createElement('div');
+		}
+		return this.playerContainer;
+	},
+
+	getPlayerContent: function() {
+		if ( this.playerContent === null ) {
+			this.playerContent = document.getElementById('content') ||
+				document.createElement('div');
+		}
+		return this.playerContent;
 	},
 
 	resetPlayer: function() {
@@ -24,8 +42,8 @@ var theater = {
 		player.style.display = "block";
 
 		// Hide content
-		var content = document.getElementById("content");
-		content.style.display = "none";	
+		var content = this.getPlayerContent();
+		content.style.display = "none";
 	},
 
 	disablePlayer: function() {
@@ -36,7 +54,7 @@ var theater = {
 		this.resetPlayer();
 
 		// Show content
-		var content = document.getElementById("content");
+		var content = this.getPlayerContent();
 		content.style.display = "block";
 	},
 
@@ -46,10 +64,11 @@ var theater = {
 
 	loadVideo: function( type, data, startTime ) {
 
-		if(swfobject && !swfobject.hasFlashPlayerVersion("1")) return;
-		if ( ( type == null ) || ( data == null ) ) return;
+		if((swfobject !== null) &&
+			!swfobject.hasFlashPlayerVersion("1")) return;
+		if ( ( type === null ) || ( data === null ) ) return;
 		
-		if ( type == "" ) {
+		if ( type === "" ) {
 			this.disablePlayer();
 			return;
 		}
@@ -59,13 +78,13 @@ var theater = {
 		var player = this.getPlayer();
 
 		// player doesn't exist or is different video type
-		if ( (player == null) || (player.getType() != type) ) {
+		if ( (player === null) || (player.getType() != type) ) {
 
 			this.resetPlayer();
 			this.enablePlayer();
 
 			var playerObject = getPlayerByType( type );
-			if ( playerObject != null ) {
+			if ( playerObject !== null ) {
 				this.player = new playerObject();
 			} else {
 				this.getPlayerContainer().innerText = "Video type not yet implemented.";
@@ -74,7 +93,7 @@ var theater = {
 
 		}
 
-		this.player.setVolume( (this.volume != null) ? this.volume : 25 );
+		this.player.setVolume( (this.volume !== null) ? this.volume : 25 );
 		this.player.setStartTime( startTime || 0 );
 		this.player.setVideo( data );
 
@@ -82,7 +101,7 @@ var theater = {
 
 	setVolume: function( volume ) {
 		this.volume = volume;
-		if ( this.player != null ) {
+		if ( this.player !== null ) {
 			this.player.setVolume( volume );
 		}
 	},
@@ -104,27 +123,31 @@ var theater = {
 
 	sync: function( time ) {
 
-		if ( time == null ) return;
+		if ( time === null ) return;
 
-		if ( this.player != null ) {
+		if ( this.player !== null ) {
 
 			var current = this.player.getCurrentTime();
-			if ( ( current != null ) && ( Math.abs(time - current) > 5 ) ) {
+			if ( ( current !== null ) &&
+				( Math.abs(time - current) > this.syncMaxDiff ) ) {
 				this.player.setStartTime( time );
 			}
 
 		}
 
 	},
-	
-	setLanguage: function( language ) {
-		this.language = language;
-	},
+
+	toggleControls: function( enabled ) {
+		if ( this.player !== null ) {
+			this.player.toggleControls( enabled );
+		}
+	}
 
 	/*
 		Google Chromeless player doesn't support closed captions...
 		http://code.google.com/p/gdata-issues/issues/detail?id=444
 	*/
+	/*
 	enableCC: function() {
 		this.closedCaptions = true;
 	},
@@ -142,10 +165,15 @@ var theater = {
 			h = player.clientHeight / 2;
 
 		evt.initMouseEvent("click", true, true, window,
-		  0, 0, 0, w, h, false, false, false, false, 0, null);
+			0, 0, 0, w, h, false, false, false, false, 0, null);
 
 		this.getPlayer().dispatchEvent(evt);
+	},
+
+	setLanguage: function( language ) {
+		this.language = language;
 	}
+	*/
 
 };
 
@@ -154,36 +182,43 @@ var players = [];
 
 function getPlayerByType( type ) {
 	return players[ type ];
+}
+
+var DefaultVideo = function() {};
+DefaultVideo.prototype = {
+	player: null,
+
+	lastVideoId: null,
+	videoId: null,
+
+	lastVolume: null,
+	volume: 0.123,
+
+	currentTime: 0,
+
+	getCurrentTime: function() {
+		return null;
+	},
+
+	lastStartTime: 0,
+	startTime: 0,
+
+	setVolume: function( volume ) {},
+	setStartTime: function( seconds ) {},
+	seek: function( seconds ) {},
+	onRemove: function() {},
+	toggleControls: function() {}
 };
 
 function registerPlayer( type, object ) {
-
-	object.prototype.player = null;
-	
-	object.prototype.lastVideoId = null;
-	object.prototype.videoId = null;
-
-	object.prototype.lastVolume = null;
-	object.prototype.volume = 0.123;
-
-	object.prototype.currentTime = 0;
-
-	object.prototype.getCurrentTime = function() {
-		return null; // not supported or implemented
-	}
-
-	object.prototype.lastStartTime = 0;
-	object.prototype.startTime = 0;
-
+	object.prototype = new DefaultVideo();
 	object.prototype.type = type;
-
 	object.prototype.getType = function() {
 		return this.type;
-	}
+	};
 
 	players[ type ] = object;
-
-};
+}
 
 /*
 	If someone is reading this and trying to figure out how
@@ -217,6 +252,7 @@ function registerPlayer( type, object ) {
 	theater.loadVideo( "justinstream", "highspothorror168" )
 	theater.loadVideo( "blip", "6484826", 60 )
 	theater.loadVideo( "html", "<span style='color:red;'>Hello world!</span>", 10 )
+	theater.loadVideo( "viooz", "", 0 )
 
 */
 (function() {
@@ -251,20 +287,20 @@ function registerPlayer( type, object ) {
 			this.lastStartTime = null;
 			this.lastVideoId = null;
 			this.videoId = id;
-		}
+		};
 
 		this.setVolume = function( volume ) {
 			this.lastVolume = null;
 			this.volume = volume;
-		}
+		};
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
 			this.startTime = seconds;
-		}
+		};
 
 		this.seek = function( seconds ) {
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 				this.player.seekTo( seconds, true );
 
 				// Video isn't playing
@@ -272,32 +308,32 @@ function registerPlayer( type, object ) {
 					this.player.playVideo();
 				}
 			}
-		}
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
 		*/
 		this.getCurrentTime = function() {
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 				return this.player.getCurrentTime();
 			}
-		}
+		};
 
 		this.canChangeTime = function() {
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 				//Is loaded and it is not buffering
 				return this.player.getVideoBytesTotal() != -1 &&
 				this.player.getPlayerState() != 3;
 			}
-		}
+		};
 
 		this.think = function() {
 
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 
 				if ( this.videoId != this.lastVideoId ) {
 					this.player.loadVideoById( this.videoId, this.startTime );
@@ -320,7 +356,7 @@ function registerPlayer( type, object ) {
 				}
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
@@ -331,7 +367,7 @@ function registerPlayer( type, object ) {
 
 			var self = this;
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "youtube", YouTubeVideo );
@@ -368,12 +404,12 @@ function registerPlayer( type, object ) {
 			document.getElementById('player').appendChild(frame);
 
 			$f(frame).addEvent('ready', this.onReady);
-		}
+		};
 
 		this.setVolume = function( volume ) {
 			this.lastVolume = null;
 			this.volume = volume / 100;
-		}
+		};
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
@@ -381,25 +417,25 @@ function registerPlayer( type, object ) {
 			// Set minimum of 1 seconds due to Awesomium issues causing
 			// the Vimeo player not to load.
 			this.startTime = Math.max( 1, seconds );
-		}
+		};
 
 		this.seek = function( seconds ) {
-			if ( this.froogaloop != null && seconds > 1 ) {
+			if ( this.froogaloop !== null && seconds > 1 ) {
 				this.froogaloop.api('seekTo', seconds);
 			}
-		}
+		};
 
 		this.onRemove = function() {
 			this.froogaloop = null;
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
 		*/
 		this.think = function() {
 
-			if ( this.froogaloop != null ) {
+			if ( this.froogaloop !== null ) {
 
 				if ( this.volume != this.lastVolume ) {
 					this.froogaloop.api('setVolume', this.volume);
@@ -421,14 +457,14 @@ function registerPlayer( type, object ) {
 
 			}
 
-		}
+		};
 
 		this.onReady = function( player_id ) {
 			self.lastStartTime = null;
 			self.froogaloop = $f(player_id);
 			self.froogaloop.api('play');
 			self.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "vimeo", VimeoVideo );
@@ -457,7 +493,7 @@ function registerPlayer( type, object ) {
 				// consumer_key: "KOvCqpSlA0oTjSeSJJmAg",
 				start_volume: (this.videoInfo.volume || theater.volume),
 				initial_time: (this.videoInfo.initial_time || 0)
-			}
+			};
 
 			var id = this.videoInfo.archive_id.slice(1);
 			var videoType = this.videoInfo.archive_id.substr(0,1);
@@ -490,7 +526,7 @@ function registerPlayer( type, object ) {
 				params
 			);
 
-		}
+		};
 
 		/*
 			Standard Player Methods
@@ -505,7 +541,7 @@ function registerPlayer( type, object ) {
 			this.videoInfo.archive_id = info[1];
 
 			// Wait for player to be ready
-			if ( this.player == null ) {
+			if ( this.player === null ) {
 				this.lastVideoId = this.videoId;
 				this.embed();
 
@@ -522,29 +558,29 @@ function registerPlayer( type, object ) {
 						console.log("Error waiting for player to load");
 						clearInterval(interval);
 					}
-				}, 33);		
+				}, 33);
 			}
-		}
+		};
 
 		this.setVolume = function( volume ) {
 			this.lastVolume = null;
 			this.volume = volume;
 			this.videoInfo.volume = volume;
-		}
+		};
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
 			this.startTime = seconds;
 			this.videoInfo.initial_time = seconds;
-		}
+		};
 
 		this.seek = function( seconds ) {
-			this.setStartTime( seconds )
-		}
+			this.setStartTime( seconds );
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
@@ -570,12 +606,16 @@ function registerPlayer( type, object ) {
 
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
+
+		this.toggleControls = function( enabled ) {
+			this.player.height = enabled ? "100%" : "104%";
+		};
 
 	};
 	registerPlayer( "twitch", TwitchVideo );
@@ -594,7 +634,7 @@ function registerPlayer( type, object ) {
 				channel: this.videoId,
 				auto_play: true,
 				start_volume: (this.volume || 25) // this isn't working :(
-			}
+			};
 
 			var swfurl = "http://www.twitch.tv/widgets/live_embed_player.swf";
 
@@ -618,7 +658,7 @@ function registerPlayer( type, object ) {
 				params
 			);
 
-		}
+		};
 
 		/*
 			Standard Player Methods
@@ -628,7 +668,7 @@ function registerPlayer( type, object ) {
 			this.videoId = id;
 
 			// Wait for player to be ready
-			if ( this.player == null ) {
+			if ( this.player === null ) {
 				this.lastVideoId = this.videoId;
 				this.embed();
 
@@ -645,19 +685,13 @@ function registerPlayer( type, object ) {
 						console.log("Error waiting for player to load");
 						clearInterval(interval);
 					}
-				}, 33);		
+				}, 33);
 			}
-		}
-
-		this.setVolume = function( volume ) {}
-
-		this.setStartTime = function( seconds ) { }
-
-		this.seek = function( seconds ) { }
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
@@ -673,12 +707,12 @@ function registerPlayer( type, object ) {
 
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "twitchstream", TwitchStreamVideo );
@@ -699,7 +733,7 @@ function registerPlayer( type, object ) {
 				// hostname: "www.justin.tv",
 				auto_play: true,
 				start_volume: (this.volume || 25)
-			}
+			};
 
 			var swfurl = "http://www-cdn.justin.tv/widgets/live_site_player.swf";
 
@@ -723,7 +757,7 @@ function registerPlayer( type, object ) {
 				params
 			);
 
-		}
+		};
 
 		/*
 			Standard Player Methods
@@ -733,7 +767,7 @@ function registerPlayer( type, object ) {
 			this.videoId = id;
 
 			// Wait for player to be ready
-			if ( this.player == null ) {
+			if ( this.player === null ) {
 				this.lastVideoId = this.videoId;
 				this.embed();
 
@@ -750,19 +784,13 @@ function registerPlayer( type, object ) {
 						console.log("Error waiting for player to load");
 						clearInterval(interval);
 					}
-				}, 33);		
+				}, 33);
 			}
-		}
-
-		this.setVolume = function( volume ) {}
-
-		this.setStartTime = function( seconds ) { }
-
-		this.seek = function( seconds ) { }
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
@@ -778,12 +806,12 @@ function registerPlayer( type, object ) {
 
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "justinstream", JustinStreamVideo );
@@ -815,7 +843,7 @@ function registerPlayer( type, object ) {
 			controlsalpha: ".0",
 			autohideidle: 1000,
 			file: "http://blip.tv/rss/flash/123123123123", // bogus url
-		}
+		};
 
 		var params = {
 			"allowFullScreen":"true",
@@ -864,7 +892,7 @@ function registerPlayer( type, object ) {
 			this.videoId = id;
 
 			// Wait for player to be ready
-			if ( this.player == null ) {
+			if ( this.player === null ) {
 				var i = 0;
 				var interval = setInterval( function() {
 					var el = document.getElementById("player");
@@ -878,32 +906,32 @@ function registerPlayer( type, object ) {
 						console.log("Error waiting for player to load");
 						clearInterval(interval);
 					}
-				}, 33);		
+				}, 33);
 			} else {
 				this.player.sendEvent( 'pause' );
 			}
 
-		}
+		};
 
 		this.setVolume = function( volume ) {
 			this.lastVolume = null;
 			this.volume = volume / 100;
-		}
+		};
 
 		this.setStartTime = function( seconds ) {
 			this.lastStartTime = null;
 			this.startTime = seconds;
-		}
+		};
 
 		this.seek = function( seconds ) {
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 				this.player.sendEvent( 'seek', seconds );
 			}
-		}
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
@@ -911,7 +939,7 @@ function registerPlayer( type, object ) {
 
 		this.think = function() {
 
-			if ( (this.player != null) ) {
+			if ( (this.player !== null) ) {
 
 				if ( this.videoId != this.lastVideoId ) {
 					this.player.sendEvent( 'newFeed', "http://blip.tv/rss/flash/" + this.videoId );
@@ -935,12 +963,12 @@ function registerPlayer( type, object ) {
 				}
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "blip", BlipVideo );
@@ -968,7 +996,7 @@ function registerPlayer( type, object ) {
 
 			document.getElementById('player').appendChild(frame);
 
-		}
+		};
 
 		/*
 			Standard Player Methods
@@ -978,7 +1006,7 @@ function registerPlayer( type, object ) {
 			this.videoId = id;
 
 			// Wait for player to be ready
-			if ( this.player == null ) {
+			if ( this.player === null ) {
 				this.lastVideoId = this.videoId;
 				this.embed();
 
@@ -995,19 +1023,13 @@ function registerPlayer( type, object ) {
 						console.log("Error waiting for player to load");
 						clearInterval(interval);
 					}
-				}, 33);		
+				}, 33);
 			}
-		}
-
-		this.setVolume = function( volume ) {}
-
-		this.setStartTime = function( seconds ) { }
-
-		this.seek = function( seconds ) { }
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
@@ -1023,12 +1045,12 @@ function registerPlayer( type, object ) {
 
 			}
 
-		}
+		};
 
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
-		}
+		};
 
 	};
 	registerPlayer( "url", UrlVideo );
@@ -1067,27 +1089,23 @@ function registerPlayer( type, object ) {
 		this.setVideo = function( id ) {
 			this.lastVideoId = null;
 			this.videoId = id;
-		}
+		};
 
 		this.setVolume = function( volume ) {
 			this.lastVolume = null;
 			this.volume = volume / 100;
-		}
-
-		this.setStartTime = function() { }
-
-		this.seek = function( seconds ) { }
+		};
 
 		this.onRemove = function() {
 			clearInterval( this.interval );
-		}
+		};
 
 		/*
 			Player Specific Methods
 		*/
 		this.think = function() {
 
-			if ( this.player != null ) {
+			if ( this.player !== null ) {
 
 				if ( this.videoId != this.lastVideoId ) {
 					this.player.load( this.videoId );
@@ -1102,7 +1120,7 @@ function registerPlayer( type, object ) {
 				
 			}
 
-		}
+		};
 		
 		this.onReady = function() {
 			this.player = document.getElementById('player');
@@ -1110,10 +1128,11 @@ function registerPlayer( type, object ) {
 			var self = this;
 			this.interval = setInterval( function() { self.think(self); }, 100 );
 			this.player.setVolume( this.volume );
-		}
+		};
 		
 	};
 	registerPlayer( "livestream", LivestreamVideo );
+
 
 	var HtmlVideo = function() {
 
@@ -1135,7 +1154,7 @@ function registerPlayer( type, object ) {
 
 			document.getElementById('player').appendChild(content);
 
-		}
+		};
 
 		/*
 			Standard Player Methods
@@ -1144,18 +1163,88 @@ function registerPlayer( type, object ) {
 			this.lastVideoId = null;
 			this.videoId = id;
 			this.embed();
-		}
-
-		this.setVolume = function( volume ) { }
-
-		this.setStartTime = function( seconds ) { }
-
-		this.seek = function( seconds ) { }
-
-		this.onRemove = function() { }
+		};
 
 	};
 	registerPlayer( "html", HtmlVideo );
+
+
+	var VioozVideo = function() {
+		// Reference:
+		// https://github.com/kcivey/jquery.jwplayer/blob/master/jquery.jwplayer.js
+
+		var flashstream = document.getElementById("flashstream"),
+			embed = (flashstream && flashstream.children[4]);
+
+		if (embed) {
+			// Force player fullscreen
+			document.body.style.setProperty('overflow', 'hidden');
+			embed.style.setProperty('z-index', '99999');
+			embed.style.setProperty('position', 'fixed');
+			embed.style.setProperty('top', '0');
+			embed.style.setProperty('left', '0');
+			embed.width = "100%";
+			embed.height = "105%";
+
+			this.player = embed;
+		}
+
+		/*
+			Standard Player Methods
+		*/
+		this.setVideo = function( id ) {
+			this.lastStartTime = null;
+		};
+
+		this.setVolume = function( volume ) {
+			this.lastVolume = volume;
+			if ( this.player !== null ) {
+				this.player.jwSetVolume(volume);
+			}
+		};
+
+		this.setStartTime = function( seconds ) {
+			this.seek(seconds);
+		};
+
+		this.seek = function( seconds ) {
+			if ( this.player !== null ) {
+				this.player.jwSetVolume( this.lastVolume );
+
+				var state = this.player.jwGetState();
+
+				if ((state !== "BUFFERING") ||
+					(this.getBufferedTime() > seconds)) {
+					this.player.jwSeek( seconds );
+				}
+
+				// Video isn't playing
+				if ( state === "IDLE" ) {
+					this.player.jwPlay();
+				}
+			}
+		};
+
+		/*
+			Player Specific Methods
+		*/
+		this.getCurrentTime = function() {
+			if ( this.player !== null ) {
+				return this.player.jwGetPosition();
+			}
+		};
+
+		this.getBufferedTime = function() {
+			return this.player.jwGetDuration() *
+				this.player.jwGetBuffer();
+		};
+
+		this.toggleControls = function( enabled ) {
+			this.player.height = enabled ? "100%" : "105%";
+		};
+
+	};
+	registerPlayer( "viooz", VioozVideo );
 
 })();
 
@@ -1164,8 +1253,9 @@ function registerPlayer( type, object ) {
 */
 
 function onYouTubePlayerReady( playerId ) {
-	var player = theater.getPlayer();
-	if ( player && (player.getType() == "youtube" || player.getType() == "youtubelive") ) {
+	var player = theater.getPlayer(),
+		type = player && player.getType();
+	if ( player && ((type == "youtube") || (type == "youtubelive")) ) {
 		player.onReady();
 	}
 }
@@ -1178,3 +1268,9 @@ function livestreamPlayerCallback( event, data ) {
 		}
 	}
 }
+
+if (window.onTheaterReady) {
+	onTheaterReady();
+}
+
+console.log("Loaded theater.js");
