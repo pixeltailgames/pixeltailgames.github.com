@@ -3,6 +3,8 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
+	VERSION: '1.1',
+
 	playerContainer: null,
 	playerContent: null,
 	// closedCaptions: false,
@@ -1273,4 +1275,4 @@ if (window.onTheaterReady) {
 	onTheaterReady();
 }
 
-console.log("Loaded theater.js");
+console.log("Loaded theater.js v" + theater.VERSION);
