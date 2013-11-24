@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1',
+	VERSION: '1.1.1',
 
 	playerContainer: null,
 	playerContent: null,
@@ -716,6 +716,10 @@ function registerPlayer( type, object ) {
 			this.interval = setInterval( function() { self.think(self); }, 100 );
 		};
 
+		this.toggleControls = function( enabled ) {
+			this.player.height = enabled ? "100%" : "104%";
+		};
+
 	};
 	registerPlayer( "twitchstream", TwitchStreamVideo );
 
@@ -813,6 +817,10 @@ function registerPlayer( type, object ) {
 		this.onReady = function() {
 			this.player = document.getElementById('player');
 			this.interval = setInterval( function() { self.think(self); }, 100 );
+		};
+
+		this.toggleControls = function( enabled ) {
+			this.player.height = enabled ? "100%" : "104%";
 		};
 
 	};
