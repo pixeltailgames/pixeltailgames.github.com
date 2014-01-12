@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.1',
+	VERSION: '1.1.2',
 
 	playerContainer: null,
 	playerContent: null,
@@ -741,7 +741,7 @@ function registerPlayer( type, object ) {
 				start_volume: (this.volume || 25)
 			};
 
-			var swfurl = "http://www-cdn.justin.tv/widgets/live_site_player.swf";
+			var swfurl = "http://www-cdn.jtvnw.net/swflibs/JustinPlayer.swf";
 
 			var params = {
 				"allowFullScreen": "true",
