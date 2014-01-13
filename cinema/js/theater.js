@@ -635,7 +635,7 @@ function registerPlayer( type, object ) {
 				hostname: "www.twitch.tv",
 				channel: this.videoId,
 				auto_play: true,
-				start_volume: (this.volume || 25) // this isn't working :(
+				start_volume: 25 // out of 50
 			};
 
 			var swfurl = "http://www.twitch.tv/widgets/live_embed_player.swf";
