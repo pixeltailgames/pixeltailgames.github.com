@@ -45,8 +45,8 @@ module.exports = function(grunt) {
 				},
 				files: [
 					'<%= watch.js.files %>',
-					'/css/*.css',
-					'**/*.html'
+					'css/*.css',
+					'*.html'
 				]
 			}
 		}
