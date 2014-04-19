@@ -128,15 +128,15 @@ pause
 
 	<script type="text/javascript">
 	window.URL = window.webkitURL || window.URL;
-	window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||       window.MozBlobBuilder;
+	window.Blob = window.Blob || window.WebKitBlob || window.MozBlob;
 
 	function downloadScript() {
 		var text = document.getElementById('batchScript').innerHTML;
 		var blob = new Blob([text], {type:'text/plain'});
 		var filename = 'gmodfix.bat';
 
-		var downloadLink = document.createElement("a");
-		downloadLink.href = window.webkitURL.createObjectURL(blob);
+		var downloadLink = document.createElement('a');
+		downloadLink.href = window.URL.createObjectURL(blob);
 		downloadLink.download = filename;
 		downloadLink.click();
 	}
