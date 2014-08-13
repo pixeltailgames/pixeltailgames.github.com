@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.2',
+	VERSION: '1.1.4',
 
 	playerContainer: null,
 	playerContent: null,
@@ -251,7 +251,7 @@ function registerPlayer( type, object ) {
 	theater.loadVideo( "twitch", "mega64podcast,a349531893", 30*60 )
 	theater.loadVideo( "twitch", "cosmowright,c1789194" )
 	theater.loadVideo( "twitchstream", "ignproleague" )
-	theater.loadVideo( "justinstream", "highspothorror168" )
+	Justin.TV Support removed 8-5-2014
 	theater.loadVideo( "blip", "6484826", 60 )
 	theater.loadVideo( "html", "<span style='color:red;'>Hello world!</span>", 10 )
 	theater.loadVideo( "viooz", "", 0 )
@@ -505,7 +505,7 @@ function registerPlayer( type, object ) {
 				flashvars.archive_id = id;
 			}
 
-			var swfurl = "http://www.twitch.tv/widgets/archive_site_player.swf";
+			var swfurl = "http://www.twitch.tv/widgets/archive_embed_player.swf";
 			swfurl += "?channel=" + flashvars.channel;
 
 			var params = {
@@ -550,7 +550,7 @@ function registerPlayer( type, object ) {
 				var i = 0;
 				var interval = setInterval( function() {
 					var el = document.getElementById("player");
-					if(el.play_video){
+					if(el.mute){
 						clearInterval(interval);
 						self.onReady();
 					}
@@ -691,6 +691,11 @@ function registerPlayer( type, object ) {
 			}
 		};
 
+		this.setVolume = function( volume ) {
+			this.lastVolume = null;
+			this.volume = volume;
+		};
+
 		this.onRemove = function() {
 			clearInterval( this.interval );
 		};
@@ -701,10 +706,15 @@ function registerPlayer( type, object ) {
 		this.think = function() {
 
 			if ( this.player ) {
-				
+
 				if ( this.videoId != this.lastVideoId ) {
 					this.embed();
 					this.lastVideoId = this.videoId;
+				}
+
+				 if ( this.volume != this.lastVolume ) {
+					// this.embed(); // volume doesn't change...
+					this.lastVolume = this.volume;
 				}
 
 			}
@@ -722,109 +732,6 @@ function registerPlayer( type, object ) {
 
 	};
 	registerPlayer( "twitchstream", TwitchStreamVideo );
-
-	var JustinStreamVideo = function() {
-
-		var self = this;
-
-		/*
-			Embed Player Object
-		*/
-		this.embed = function() {
-
-			var flashvars = {
-				publisherGuard: "null",
-				hide_chat: true,
-				channel: this.videoId,
-				// hostname: "www.justin.tv",
-				auto_play: true,
-				start_volume: (this.volume || 25)
-			};
-
-			var swfurl = "http://www-cdn.jtvnw.net/swflibs/JustinPlayer.swf";
-
-			var params = {
-				"allowFullScreen": "true",
-				"allowNetworking": "all",
-				"allowScriptAccess": "always",
-				"movie": swfurl,
-				"wmode": "opaque",
-				"bgcolor": "#000000"
-			};
-
-			swfobject.embedSWF(
-				swfurl,
-				"player",
-				"100%",
-				"104%",
-				"9.0.0",
-				false,
-				flashvars,
-				params
-			);
-
-		};
-
-		/*
-			Standard Player Methods
-		*/
-		this.setVideo = function( id ) {
-			this.lastVideoId = null;
-			this.videoId = id;
-
-			// Wait for player to be ready
-			if ( this.player === null ) {
-				this.lastVideoId = this.videoId;
-				this.embed();
-
-				var i = 0;
-				var interval = setInterval( function() {
-					var el = document.getElementById("player");
-					if(el.mute){
-						clearInterval(interval);
-						self.onReady();
-					}
-
-					i++;
-					if (i > 500) {
-						console.log("Error waiting for player to load");
-						clearInterval(interval);
-					}
-				}, 33);
-			}
-		};
-
-		this.onRemove = function() {
-			clearInterval( this.interval );
-		};
-
-		/*
-			Player Specific Methods
-		*/
-		this.think = function() {
-
-			if ( this.player ) {
-				
-				if ( this.videoId != this.lastVideoId ) {
-					this.embed();
-					this.lastVideoId = this.videoId;
-				}
-
-			}
-
-		};
-
-		this.onReady = function() {
-			this.player = document.getElementById('player');
-			this.interval = setInterval( function() { self.think(self); }, 100 );
-		};
-
-		this.toggleControls = function( enabled ) {
-			this.player.height = enabled ? "100%" : "104%";
-		};
-
-	};
-	registerPlayer( "justinstream", JustinStreamVideo );
 
 	var BlipVideo = function() {
 
@@ -1185,8 +1092,15 @@ function registerPlayer( type, object ) {
 
 		var flashstream = document.getElementById("flashstream"),
 			embed = (flashstream && flashstream.children[4]);
-
+		
+		// Make the Player's Div Parent Element accessible
+		var flashstream_container = document.getElementById(flashstream.parentNode.id);
+		flashstream_container.style.display="initial";
+		
 		if (embed) {
+			// Hide the Banner Ad that overlays the player
+			document.getElementById("rhw_footer").style.display="none";
+			
 			// Force player fullscreen
 			document.body.style.setProperty('overflow', 'hidden');
 			embed.style.setProperty('z-index', '99999');
