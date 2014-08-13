@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.3',
+	VERSION: '1.1.4',
 
 	playerContainer: null,
 	playerContent: null,
@@ -1092,8 +1092,15 @@ function registerPlayer( type, object ) {
 
 		var flashstream = document.getElementById("flashstream"),
 			embed = (flashstream && flashstream.children[4]);
-
+		
+		// Make the Player's Div Parent Element accessible
+		var flashstream_container = document.getElementById(flashstream.parentNode.id);
+		flashstream_container.style.display="initial";
+		
 		if (embed) {
+			// Hide the Banner Ad that overlays the player
+			document.getElementById("rhw_footer").style.display="none";
+			
 			// Force player fullscreen
 			document.body.style.setProperty('overflow', 'hidden');
 			embed.style.setProperty('z-index', '99999');
