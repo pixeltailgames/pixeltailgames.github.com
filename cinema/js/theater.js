@@ -493,10 +493,12 @@ function registerPlayer( type, object ) {
 				initial_time: (this.videoInfo.initial_time || 0)
 			};
 
-			var id = this.videoInfo.archive_id.slice(1);
-			var videoType = this.videoInfo.archive_id.substr(0,1);
+			var id = this.videoInfo.archive_id.slice(1),
+				videoType = this.videoInfo.archive_id.substr(0,1);
+
+			flashvars.videoId = videoType + id;
+
 			if (videoType == "c") {
-				flashvars.videoId = videoType + id;
 				flashvars.chapter_id = id;
 			} else {
 				flashvars.archive_id = id;
