@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.4',
+	VERSION: '1.1.5',
 
 	playerContainer: null,
 	playerContent: null,
@@ -248,7 +248,7 @@ function registerPlayer( type, object ) {
 	theater.loadVideo( "youtube", "JVxe5NIABsI", 30 )
 	theater.loadVideo( "youtubelive", "0Sdkwsw2Ji0" )
 	theater.loadVideo( "vimeo", "55874553", 30 )
-	theater.loadVideo( "twitch", "mega64podcast,a349531893", 30*60 )
+	theater.loadVideo( "twitch", "mega64podcast,c4320640", 30*60 )
 	theater.loadVideo( "twitch", "cosmowright,c1789194" )
 	theater.loadVideo( "twitchstream", "ignproleague" )
 	Justin.TV Support removed 8-5-2014
@@ -489,10 +489,6 @@ function registerPlayer( type, object ) {
 				hostname: "www.twitch.tv",
 				channel: this.videoInfo.channel,
 				auto_play: true,
-				// custom: true,
-				// enable_javascript: true,
-				// watermark_position: "top_left",
-				// consumer_key: "KOvCqpSlA0oTjSeSJJmAg",
 				start_volume: (this.videoInfo.volume || theater.volume),
 				initial_time: (this.videoInfo.initial_time || 0)
 			};
@@ -500,13 +496,13 @@ function registerPlayer( type, object ) {
 			var id = this.videoInfo.archive_id.slice(1);
 			var videoType = this.videoInfo.archive_id.substr(0,1);
 			if (videoType == "c") {
+				flashvars.videoId = videoType + id;
 				flashvars.chapter_id = id;
 			} else {
 				flashvars.archive_id = id;
 			}
 
-			var swfurl = "http://www.twitch.tv/widgets/archive_embed_player.swf";
-			swfurl += "?channel=" + flashvars.channel;
+			var swfurl = "http://www.twitch.tv/swflibs/TwitchPlayer.swf";
 
 			var params = {
 				"allowFullScreen": "true",
@@ -633,12 +629,14 @@ function registerPlayer( type, object ) {
 
 			var flashvars = {
 				hostname: "www.twitch.tv",
+				hide_chat: true,
 				channel: this.videoId,
+				embed: 0,
 				auto_play: true,
 				start_volume: 25 // out of 50
 			};
 
-			var swfurl = "http://www.twitch.tv/widgets/live_embed_player.swf";
+			var swfurl = "http://www.twitch.tv/swflibs/TwitchPlayer.swf";
 
 			var params = {
 				"allowFullScreen": "true",
