@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.5',
+	VERSION: '1.1.6',
 
 	playerContainer: null,
 	playerContent: null,
@@ -264,23 +264,14 @@ function registerPlayer( type, object ) {
 		/*
 			Embed Player Object
 		*/
-		var params = {
-			allowScriptAccess: "always",
-			bgcolor: "#000000",
-			wmode: "opaque"
-		};
-
-		var attributes = {
-			id: "player",
-		};
-
-		var url = "http://www.youtube.com/apiplayer?enablejsapi=1&playerapiid=player&version=3";
-		if ( theater.isCCEnabled() ) {
-			url += "&cc_load_policy=1";
-			url += "&yt:cc=on";
-		}
-
-		swfobject.embedSWF( url, "player", "100%", "100%", "9", null, null, params, attributes );
+		var player = new YT.Player('player', {
+			height: '100%',
+			width: '100%',
+			playerVars: { 'autoplay': 1, 'controls': 0, 'iv_load_policy': 3/*, 'cc_load_policy': theater.closedCaptions ? 1 : 0*/ }, // I can't figure out why CC isn't working here
+			events: {
+				'onReady': onYouTubePlayerReady,
+			}
+		});
 
 		/*
 			Standard Player Methods
@@ -350,9 +341,9 @@ function registerPlayer( type, object ) {
 						this.lastStartTime = this.startTime;
 					}
 
-					if ( this.volume != this.player.getVolume() ) {
+					if ( this.volume != this.lastVolume ) {
 						this.player.setVolume( this.volume );
-						this.volume = this.player.getVolume();
+						this.lastVolume = this.volume;
 					}
 
 				}
@@ -361,7 +352,7 @@ function registerPlayer( type, object ) {
 		};
 
 		this.onReady = function() {
-			this.player = document.getElementById('player');
+			this.player = player;
 
 			if ( theater.isHDEnabled() ) {
 				this.player.setPlaybackQuality("hd720");
