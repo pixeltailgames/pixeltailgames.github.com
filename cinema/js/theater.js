@@ -3,7 +3,7 @@ window.open = function() { return null; }; // prevent popups
 
 var theater = {
 
-	VERSION: '1.1.6',
+	VERSION: '1.1.7',
 
 	playerContainer: null,
 	playerContent: null,
