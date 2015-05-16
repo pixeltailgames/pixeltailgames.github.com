@@ -66,8 +66,6 @@ var theater = {
 
 	loadVideo: function( type, data, startTime ) {
 
-		if((swfobject !== null) &&
-			!swfobject.hasFlashPlayerVersion("1")) return;
 		if ( ( type === null ) || ( data === null ) ) return;
 		
 		if ( type === "" ) {
